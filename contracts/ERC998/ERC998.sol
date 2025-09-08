@@ -39,8 +39,7 @@ error ERC998_AllowanceCallFailed(address from, address erc20Contract, uint256 va
 /// @title ERC998
 /// @author Maxime Normandin <m.normandin@tranqilo.ca>
 /// @notice ERC998 is a contract that implements the ERC998 interface.
-/// @notice This contract is a updated version of the ERC998 contract by Nick Mudge <nick@perfectabstractions.com>,
-/// @notice Original implementation: https://github.com/mattlockyer/composables-998/blob/master/contracts/ComposableTopDown.sol
+/// @notice Find the repository here: https://github.com/maxnorm/composable-nft-erc998
 /// @dev This contract is used to create a top-down composable NFT with ERC721 and ERC20. 
 abstract contract ERC998 is
   ERC721, 
