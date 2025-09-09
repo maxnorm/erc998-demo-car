@@ -168,7 +168,9 @@ async function addFuelTankToCar(fuelTankToken: string, carToken: string): Promis
   console.log(line);
 }
 
-
+/**
+ * Assemble the car parts to the car
+ */
 async function assemble(): Promise<void> {
   console.log("\n" + line);
   console.log("| Assembling the car");
