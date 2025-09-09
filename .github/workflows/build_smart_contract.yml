@@ -9,7 +9,7 @@ on:
       - 'docs/**'
 
 jobs:
-  backend-tests:
+  build:
     name: build contracts
     runs-on: ubuntu-latest
     steps:
