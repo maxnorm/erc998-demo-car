@@ -6,6 +6,8 @@ This project demonstrates the power of ERC998 composable NFTs through a car asse
 
 ERC998 is a standard for composable NFTs that allows an NFT to own other NFTs and ERC20 tokens. This creates hierarchical ownership structures where a parent NFT can contain child tokens, enabling complex digital asset compositions.
 
+Find more information about ERC998 [here](https://github.com/maxnorm/composable-nft-erc998).
+
 ## Project Overview
 
 This demo project includes:
