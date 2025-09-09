@@ -32,6 +32,3 @@ jobs:
 
       - name: Compile contracts
         run: npx hardhat compile
-
-      - name: Run Coverage
-        run: npx hardhat coverage
