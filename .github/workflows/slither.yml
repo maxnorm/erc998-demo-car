@@ -19,10 +19,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node.js 22.19.0(LTS)
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: 22.19.0
           cache: 'npm'
           cache-dependency-path: 'package-lock.json'
 
@@ -37,7 +37,7 @@ jobs:
           sarif: results.sarif
           fail-on: none  # Don't fail on any severity
           solc-version: 0.8.28
-          node-version: 18
+          node-version: 22.19.0
           slither-args: |
             --show-ignored-findings
             --filter-paths "node_modules"
