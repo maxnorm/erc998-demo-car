@@ -1,4 +1,4 @@
-name: Build 
+name: check
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   backend-tests:
-    name: Smart Contract Build
+    name: build contracts
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -21,19 +21,11 @@ jobs:
         with:
           node-version: 18.20.4
 
-      - name: Cache Backend Node Modules
-        id: cache-backend-node-modules
-        uses: actions/cache@v3
-        with:
-          path: 'node_modules'
-          key: node_modules-${{ hashFiles('package-lock.json') }}-hardhat-latest
-
-      - name: Install Backend Dependencies
-        if: steps.cache-backend-node-modules.outputs.cache-hit != 'true'
+      - name: Install Dependencies
         run: npm ci
 
       - name: Update Hardhat to latest version
-        run: npm install hardhat@latest
+        run: npm install hardhat
 
       - name: Clean Hardhat cache
         run: npx hardhat clean
