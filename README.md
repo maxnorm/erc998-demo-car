@@ -1,57 +1,54 @@
-# Sample Hardhat 3 Beta Project (`mocha` and `ethers`)
+# ERC998 Composable NFT Demo - Car Assembly
 
-This project showcases a Hardhat 3 Beta project using `mocha` for tests and the `ethers` library for Ethereum interactions.
+This project demonstrates the power of ERC998 composable NFTs through a car assembly example. Cars are composable NFTs that can own and be composed of various car parts (also NFTs), showcasing the "NFT of NFTs" concept.
 
-To learn more about the Hardhat 3 Beta, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3 Beta](https://hardhat.org/hardhat3-beta-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+## What is ERC998?
+
+ERC998 is a standard for composable NFTs that allows an NFT to own other NFTs and ERC20 tokens. This creates hierarchical ownership structures where a parent NFT can contain child tokens, enabling complex digital asset compositions.
 
 ## Project Overview
 
-This example project includes:
+This demo project includes:
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using `mocha` and ethers.js
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+- **Car Contract**: ERC998 composable NFT representing cars that can own car parts
+- **Part Contracts**: ERC721/ERC998 NFTs representing individual car parts (Engine, Wheel, FuelTank)
+- **Fuel Contract**: ERC20 token representing fuel that can be owned by fuel tanks
+- **Interactive Demo Script**: Comprehensive demonstration of car assembly and disassembly
+
+## Schema
+
+![ERC998 Composable NFT Demo - Car Assembly](./doc/assets/schema.png)
 
 ## Usage
 
-### Running Tests
+### Running the Interactive Demo
 
-To run all the tests in the project, execute the following command:
+Run the interactive demo script that demonstrates all ERC998 functionality:
 
+1. Clone the repository:
 ```shell
-npx hardhat test
+git clone https://github.com/maxnorm/erc998-demo-car.git
 ```
 
-You can also selectively run the Solidity or `mocha` tests:
-
+2. Install dependencies:
 ```shell
-npx hardhat test solidity
-npx hardhat test mocha
+npm install
 ```
 
-### Make a deployment to Sepolia
-
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
-
-To run the deployment to a local chain:
-
+3. Run the development network (In another terminal):
 ```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+npx hardhat node
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
-
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
-
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
+4. Run the demo script & monitor the logs to see the demo:
 ```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+npx hardhat run scripts/demo.ts --network localhost
 ```
 
-After setting the variable, you can run the deployment with the Sepolia network:
-
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
-```
+This script will:
+1. Deploy Car, Engine, Wheel, FuelTank, and Fuel contracts
+2. Mint various car parts (engine, 4 wheels, fuel tank) and fuel
+3. Assemble parts into a complete car using different ERC998 methods
+4. Demonstrate part transfers and disassembly
+5. Show car sales with all nested ownership intact
+6. Verify ownership hierarchies throughout the process
