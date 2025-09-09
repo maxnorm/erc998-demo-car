@@ -16,15 +16,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18.20.4
+      - name: Use Node.js 22.19.0(LTS)
         uses: actions/setup-node@v3
         with:
-          node-version: 18.20.4
+          node-version: 22.19.0
 
       - name: Install Dependencies
         run: npm ci
 
-      - name: Update Hardhat to latest version
+      - name: Install Hardhat
         run: npm install hardhat
 
       - name: Clean Hardhat cache
