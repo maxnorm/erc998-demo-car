@@ -1,0 +1,39 @@
+name: Build & Test Smart Contracts
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+jobs:
+  backend-tests:
+    name: Smart Contract Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 20.11.1
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.11.1
+
+      - name: Cache Backend Node Modules
+        id: cache-backend-node-modules
+        uses: actions/cache@v3
+        with:
+          path: 'node_modules'
+          key: node_modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Backend Dependencies
+        if: steps.cache-backend-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Compile contracts
+        run: npx hardhat compile
+
+      - name: Run Coverage
+        run: npx hardhat coverage

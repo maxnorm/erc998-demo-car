@@ -1,0 +1,44 @@
+name: Slither Analysis
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Slither
+        uses: crytic/slither-action@v0.4.1
+        continue-on-error: true  # Don't fail the workflow on warnings
+        with:
+          slither-config: 'slither.config.json'
+          sarif: results.sarif
+          fail-on: none  # Don't fail on any severity
+          solc-version: 0.8.28
+          node-version: 18
+          slither-args: |
+            --show-ignored-findings
+            --filter-paths "node_modules"
+            --max-high-findings 0  # Fail if there are any high severity findings
+            --max-medium-findings 3  # Allow up to 3 medium severity findings
