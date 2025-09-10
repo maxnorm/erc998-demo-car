@@ -19,7 +19,7 @@ This demo project includes:
 
 ## Schema
 
-![ERC998 Composable NFT Demo - Car Assembly](./doc/assets/schema.png)
+![ERC998 Composable NFT Demo - Car Assembly](./doc/assets/car-schema.png)
 
 ## Usage
 
