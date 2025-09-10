@@ -253,8 +253,6 @@ async function detachFuelTankFromCar(fuelTankToken: string, fromCarToken: string
   console.log(`| Detaching Fuel Tank #${fuelTankToken} from Car #${fromCarToken}...`);
   console.log(line);
 
-
-  // Mint a new car to alice (new composable)
   await waitForInput("First, let's mint a new car to Alice...");
   const toCarToken = await mintCar(await alice.getAddress());
   console.log(line);
@@ -283,6 +281,21 @@ async function detachFuelTankFromCar(fuelTankToken: string, fromCarToken: string
   console.log(`| Gas used: ${receipt.gasUsed.toString()}`);
   console.log(`| FuelTank #${fuelTankToken} successfully transferred from Car #${fromCarToken} to Car #${toCarToken}`);
   console.log(line);
+
+  await waitForInput("Let's send the fuel tank back to Alice for the demo purposes...");
+  console.log(line);
+  console.log("| Transferring Fuel Tank...");
+  console.log(`| From: Car #${toCarToken} (${carAddress})`);
+  console.log(`| To: Alice (${await alice.getAddress()})`);
+  console.log("|");
+  
+  const tx2 = await car.connect(alice).transferChild(toCarToken, await alice.getAddress(), fuelTankAddress, fuelTankToken);
+  const receipt2 = await tx2.wait();
+
+  console.log(`| Transaction hash: ${tx2.hash}`);
+  console.log(`| Gas used: ${receipt2.gasUsed.toString()}`);
+  console.log(`| FuelTank #${fuelTankToken} successfully transferred from Car #${toCarToken} to Alice`);
+  console.log(line);
 }
 
 /**
@@ -290,38 +303,30 @@ async function detachFuelTankFromCar(fuelTankToken: string, fromCarToken: string
  * @param waiting - whether to wait for input before each step (default: true)
  * @returns the car parts
  */
-async function assemble(waiting: boolean = true): Promise<CarParts> {
+async function assemble(carParts: CarParts, waiting: boolean = true): Promise<void> {
   console.log(line);
   console.log("| Assembling the car");
   console.log(line);
 
   if (waiting) {
-    await waitForInput("Before we assemble the car, we need to mint the car parts...");
-  }
-  // Mint car parts to alice
-  const { carToken, engineToken, wheelToken_1, wheelToken_2, wheelToken_3, wheelToken_4, fuelTankToken, fuelToken } = await mintCarParts(await alice.getAddress());
-
-  if (waiting) {
     await waitForInput("Let's send the engine to the car...");
   }
-  await transferEngineToCar(engineToken, carToken);
+  await transferEngineToCar(carParts.engineToken, carParts.carToken);
 
   console.log(line);
 
   if (waiting) {
     await waitForInput("Our car needs wheels! Let's add the four wheels to the car...");
   }
-  await addWheelToCar(wheelToken_1, carToken);
-  await addWheelToCar(wheelToken_2, carToken);
-  await addWheelToCar(wheelToken_3, carToken);
-  await addWheelToCar(wheelToken_4, carToken);
+  await addWheelToCar(carParts.wheelToken_1, carParts.carToken);
+  await addWheelToCar(carParts.wheelToken_2, carParts.carToken);
+  await addWheelToCar(carParts.wheelToken_3, carParts.carToken);
+  await addWheelToCar(carParts.wheelToken_4, carParts.carToken);
 
   if (waiting) {
     await waitForInput("A car without a fuel tank doesnt go far! Let's add the fuel tank to the car...");
   }
-  await addFuelTankToCar(fuelTankToken, carToken);
-
-  return { carToken, engineToken, wheelToken_1, wheelToken_2, wheelToken_3, wheelToken_4, fuelTankToken, fuelToken };
+  await addFuelTankToCar(carParts.fuelTankToken, carParts.carToken);
 }
 
 /**
@@ -373,8 +378,11 @@ async function main(): Promise<void> {
   await waitForInput("Ready to deploy contracts...");
   await deploy();
 
-  await waitForInput("Contracts deployed! Let's assemble the car now...");
-  const carParts = await assemble();
+  await waitForInput("Contracts deployed! Let's mint the car parts now...");
+  const carParts = await mintCarParts(await alice.getAddress());
+
+  await waitForInput("Now that Alice has the car parts, let's assemble the car now...");
+  await assemble(carParts);
 
   console.log("");
   console.log(line);
@@ -387,6 +395,10 @@ async function main(): Promise<void> {
   await waitForInput("Let's look how we can disassemble the car...");
   await disassemble(carParts, await alice.getAddress());
 
+  await waitForInput("Now that Alice has all the car parts back, she can reassemble a car using the first car token...");
+  await assemble(carParts, false);
+
+  await waitForInput("We can now sell the car to Bob...");
   await sellCar(carParts.carToken, await bob.getAddress());
 }
 
