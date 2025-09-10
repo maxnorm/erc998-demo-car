@@ -1,6 +1,7 @@
 import hre from "hardhat";
 const network = await hre.network.connect();
 const ethers = network.ethers;
+import * as readline from 'readline';
 
 const line = "|======================================================================|";
 
@@ -19,16 +20,9 @@ let fuelAddress: string;
 let alice: any;
 let bob: any;
 
-type CarParts = { 
-  carToken: any, 
-  engineToken: any, 
-  wheelToken_1: any, 
-  wheelToken_2: any, 
-  wheelToken_3: any, 
-  wheelToken_4: any, 
-  fuelTankToken: any, 
-  fuelToken: any;
-};
+// ========================================================
+// Deploying contracts
+// ========================================================
 
 async function deploy(): Promise<void> {
   [alice, bob] = await ethers.getSigners();
@@ -45,6 +39,10 @@ async function deploy(): Promise<void> {
   }
   console.log(line);
 }
+
+// ========================================================
+// Minting car parts
+// ========================================================
 
 async function mintCar(to: string): Promise<any> {
   const tx =   await car.mint(to);
@@ -80,6 +78,7 @@ async function mintFuel(to: string): Promise<any> {
    // Transfer event: [from, to, value] (ERC20 Event)
    return receipt.logs[0].args[2];
 }
+
 async function mintCarParts(to: string): Promise<CarParts> {
   const carToken =   await mintCar(to);
   const engineToken = await mintEngine(to);
@@ -90,6 +89,7 @@ async function mintCarParts(to: string): Promise<CarParts> {
   const fuelTankToken = await mintFuelTank(to);
   const fuelToken = await mintFuel(to);
 
+  console.log(line);
   console.log(`| Minted car parts to ${to}`);
   console.log(line);
   console.log(`| Car ID: ${carToken}`);
@@ -110,8 +110,9 @@ async function mintCarParts(to: string): Promise<CarParts> {
 // Method 1: Using safeTransferFrom with data (ERC721)
 // ========================================================
 async function transferEngineToCar(engineToken: string, carToken: string): Promise<void> {
+  console.log(line);
   console.log(`| Sending Engine #${engineToken} to Car #${carToken}...`);
-  console.log("|");
+  console.log(line);
   console.log(`| From: ${await alice.getAddress()}`);
   console.log(`| To: ${carAddress}`);
     
@@ -133,8 +134,9 @@ async function transferEngineToCar(engineToken: string, carToken: string): Promi
 // Method 2: Using getChild() function (ERC721)
 // ========================================================
 async function addWheelToCar(wheelToken: string, carToken: string): Promise<void> {
+  console.log(line);
   console.log(`| Adding Wheel #${wheelToken} to Car #${carToken}...`);
-  console.log("|");
+  console.log(line);
   console.log(`| From: ${await alice.getAddress()}`);
   console.log(`| To: ${carAddress}`);
   
@@ -158,6 +160,7 @@ async function addWheelToCar(wheelToken: string, carToken: string): Promise<void
   console.log(`| Gas used: ${receipt.gasUsed.toString()}`);
   console.log(`| Wheel #${wheelToken} successfully added to Car #${carToken}`);
   console.log(line);
+  console.log("");
 }
 
 // ========================================================
@@ -165,8 +168,9 @@ async function addWheelToCar(wheelToken: string, carToken: string): Promise<void
 //           using ERC721 safeTransferFrom with data (FuelTank to Car)
 // ========================================================
 async function addFuelTankToCar(fuelTankToken: string, carToken: string): Promise<void> {
+  console.log(line);
   console.log(`| Adding FuelTank #${fuelTankToken} to Car #${carToken}...`);
-  console.log("|");
+  console.log(line);
   console.log(`| From: ${await alice.getAddress()}`);
   console.log(`| To: ${carAddress}`);
   
@@ -196,7 +200,9 @@ async function addFuelTankToCar(fuelTankToken: string, carToken: string): Promis
 async function detachEngineFromCar(engineToken: string, carToken: string): Promise<void> {
   const directOwner = await engine.ownerOf(engineToken);
 
+  console.log(line);
   console.log(`| Detaching Engine #${engineToken} from Car #${carToken}...`);
+  console.log(line);
   console.log("|");
   console.log("| Reference CAR Contract Address:");
   console.log(`| ${carAddress}`);
@@ -219,7 +225,9 @@ async function detachEngineFromCar(engineToken: string, carToken: string): Promi
 async function detachWheelFromCar(wheelToken: string, carToken: string): Promise<void> {
   const directOwner = await wheel.ownerOf(wheelToken);
 
+  console.log(line);
   console.log(`| Detaching Wheel #${wheelToken} from Car #${carToken}...`);
+  console.log(line);
   console.log("|");
   console.log("| Reference CAR Contract Address:");
   console.log(`| ${carAddress}`);
@@ -234,36 +242,83 @@ async function detachWheelFromCar(wheelToken: string, carToken: string): Promise
   console.log(`| Gas used: ${receipt.gasUsed.toString()}`);
   console.log(`| Wheel #${wheelToken} successfully detached from Car #${carToken}`);
   console.log(line);
+  console.log("");
 }
 
 // ========================================================
 // Method 3: Using transferChildToParent (Send to another composable NFT)
 // ========================================================
+async function detachFuelTankFromCar(fuelTankToken: string, fromCarToken: string): Promise<void> {
+  console.log(line);
+  console.log(`| Detaching Fuel Tank #${fuelTankToken} from Car #${fromCarToken}...`);
+  console.log(line);
 
+
+  // Mint a new car to alice (new composable)
+  await waitForInput("First, let's mint a new car to Alice...");
+  const toCarToken = await mintCar(await alice.getAddress());
+  console.log(line);
+  console.log(`| Minted new Car as destination (Car ID: ${toCarToken})`);
+  console.log(`| Car owner: ${await car.ownerOf(toCarToken)}`);
+  console.log(line);
+
+  await waitForInput("We are now set to transfer the fuel tank to the new car...");
+  console.log(line);
+  console.log("| Transferring Fuel Tank...");
+  console.log(`| From: Car #${fromCarToken} (${carAddress})`);
+  console.log(`| To: Car #${toCarToken} (${carAddress})`);
+  console.log("|");
+  
+  // Use transferChildToParent to move fuel tank from one car to another
+  const tx = await car.connect(alice).transferChildToParent(
+    fromCarToken,
+    carAddress,
+    toCarToken,
+    fuelTankAddress,
+    fuelTankToken
+  );
+  const receipt = await tx.wait();
+  
+  console.log(`| Transaction hash: ${tx.hash}`);
+  console.log(`| Gas used: ${receipt.gasUsed.toString()}`);
+  console.log(`| FuelTank #${fuelTankToken} successfully transferred from Car #${fromCarToken} to Car #${toCarToken}`);
+  console.log(line);
+}
 
 /**
  * Assemble the car parts to the car
+ * @param waiting - whether to wait for input before each step (default: true)
+ * @returns the car parts
  */
-async function assemble(): Promise<CarParts> {
-  console.log("\n" + line);
+async function assemble(waiting: boolean = true): Promise<CarParts> {
+  console.log(line);
   console.log("| Assembling the car");
   console.log(line);
 
+  if (waiting) {
+    await waitForInput("Before we assemble the car, we need to mint the car parts...");
+  }
   // Mint car parts to alice
   const { carToken, engineToken, wheelToken_1, wheelToken_2, wheelToken_3, wheelToken_4, fuelTankToken, fuelToken } = await mintCarParts(await alice.getAddress());
 
-  // Send Engine to the car
+  if (waiting) {
+    await waitForInput("Let's send the engine to the car...");
+  }
   await transferEngineToCar(engineToken, carToken);
 
   console.log(line);
 
-  // Add the four wheels to the car
+  if (waiting) {
+    await waitForInput("Our car needs wheels! Let's add the four wheels to the car...");
+  }
   await addWheelToCar(wheelToken_1, carToken);
   await addWheelToCar(wheelToken_2, carToken);
   await addWheelToCar(wheelToken_3, carToken);
   await addWheelToCar(wheelToken_4, carToken);
 
-  // Add the fuel tank to the car
+  if (waiting) {
+    await waitForInput("A car without a fuel tank doesnt go far! Let's add the fuel tank to the car...");
+  }
   await addFuelTankToCar(fuelTankToken, carToken);
 
   return { carToken, engineToken, wheelToken_1, wheelToken_2, wheelToken_3, wheelToken_4, fuelTankToken, fuelToken };
@@ -275,15 +330,21 @@ async function assemble(): Promise<CarParts> {
  * @param to - the address to send the car parts to
  */
 async function disassemble(car: CarParts, to: string): Promise<void> {
-  console.log("\n" + line);
+  console.log(line);
   console.log("| Disassembling the car");
   console.log(line);
 
+  await waitForInput("Let's detach the engine from the car & send it back to Alice...");
   await detachEngineFromCar(car.engineToken, car.carToken);
+
+  await waitForInput("Let's detach the wheels from the car & send them back to Alice...");
   await detachWheelFromCar(car.wheelToken_1, car.carToken);
   await detachWheelFromCar(car.wheelToken_2, car.carToken);
   await detachWheelFromCar(car.wheelToken_3, car.carToken);
   await detachWheelFromCar(car.wheelToken_4, car.carToken);
+
+  await waitForInput("let's transfer the fuel tank to another car owned by Alice...");
+  await detachFuelTankFromCar(car.fuelTankToken, car.carToken);
 }
 
 async function sellCar(carToken: string, to: string): Promise<void> {
@@ -304,10 +365,26 @@ async function sellCar(carToken: string, to: string): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  console.log(line);
+  console.log("| 🚗 Welcome to the ERC998 Composable NFT Demo");
+  console.log("| This demo will show you how composable NFTs work with car assembly.");
+  console.log(line);
+
+  await waitForInput("Ready to deploy contracts...");
   await deploy();
 
+  await waitForInput("Contracts deployed! Let's assemble the car now...");
   const carParts = await assemble();
-  
+
+  console.log("");
+  console.log(line);
+  console.log("|");
+  console.log("| 🎉 Congrats! We now have a car with 1 engine, 4 wheels, and 1 fuel tank!");
+  console.log("| All of these car parts are now owned by the car using the powerful composable NFTs!");
+  console.log("|");
+  console.log(line);
+
+  await waitForInput("Let's look how we can disassemble the car...");
   await disassemble(carParts, await alice.getAddress());
 
   await sellCar(carParts.carToken, await bob.getAddress());
@@ -321,6 +398,17 @@ main().catch((error) => {
 // ========================================================
 // Helper functions 
 // ========================================================
+type CarParts = { 
+  carToken: any, 
+  engineToken: any, 
+  wheelToken_1: any, 
+  wheelToken_2: any, 
+  wheelToken_3: any, 
+  wheelToken_4: any, 
+  fuelTankToken: any, 
+  fuelToken: any;
+};
+
 async function _assignContract (contract: string, contractInstance: any): Promise<void> {
   switch (contract) {
     case "Car":
@@ -344,4 +432,20 @@ async function _assignContract (contract: string, contractInstance: any): Promis
       fuelAddress = await contractInstance.getAddress();
       break;  
   }
+}
+
+function waitForInput(message: string): Promise<void> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  return new Promise((resolve) => {
+    console.log(`\n| ${message}`);
+    rl.question('| Press Enter to continue...', () => {
+      rl.close();
+      resolve();
+    });
+    console.log("");
+  });
 }
