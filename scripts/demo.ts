@@ -411,6 +411,57 @@ async function fuelCar(carToken: string, from: string): Promise<void> {
   
 }
 
+async function verifyBobOwnership(carParts: CarParts): Promise<void> {
+  const bobAddress = await bob.getAddress();
+  console.log(line);
+  console.log(`| Verifying Bob's ownership of Car #${carParts.carToken}`);
+  console.log(`| Bob's address: ${bobAddress}`);
+  console.log(line);
+
+  const carOwner = await car.ownerOf(carParts.carToken);
+  console.log(`| Does Bob own Car #${carParts.carToken}? ${carOwner === bobAddress ? "Yes" : "No"}`);
+  console.log(line);
+
+  const engineOwner = await engine.ownerOf(carParts.engineToken);
+  const engineRootOwner = bytes32ToAddress(await car.rootOwnerOfChild(engineAddress, carParts.engineToken));
+  await waitForInput("Let's verify Bob's ownership of the engine...");
+  console.log(line);
+  console.log(`| Does Bob own Engine #${carParts.engineToken}? ${engineOwner === bobAddress ? "Yes" : "No"}`);
+  console.log("|");
+  console.log(`| Wait! Does the car own the engine? ${engineOwner === carAddress ? "Yes" : "No"}`);
+  console.log("|");
+  console.log(`| If Bob owns the car and the car owns the engine, then Bob should be the root owner of the engine!`)
+  console.log("|");
+  console.log(`| Root owner of Engine #${carParts.engineToken}: ${engineRootOwner}`);
+  console.log(`| Does Bob own the root owner of the engine? ${engineRootOwner === bobAddress ? "Yes" : "No"}`);
+  console.log(line);
+
+  const fuelTankOwner = await fuelTank.ownerOf(carParts.fuelTankToken);
+  const fuelTankRootOwner = bytes32ToAddress(await fuelTank.rootOwnerOf(carParts.fuelTankToken));
+  await waitForInput("Let's verify Bob's ownership of the fuel tank...");
+  console.log(line);
+  console.log(`| Does Bob own Fuel Tank #${carParts.fuelTankToken}? ${fuelTankOwner === bobAddress ? "Yes" : "No"}`);
+  console.log("|");
+  console.log(`| Wait! Does the car own the fuel tank? ${fuelTankOwner === carAddress ? "Yes" : "No"}`);
+  console.log("|");
+  console.log(`| If Bob owns the car and the car owns the fuel tank, then Bob should be the root owner of the fuel tank!`)
+  console.log("|");
+  console.log(`| Root owner of Fuel Tank #${carParts.fuelTankToken}: ${fuelTankRootOwner}`);
+  console.log(`| Does Bob own the root owner of the fuel tank? ${fuelTankRootOwner === bobAddress ? "Yes" : "No"}`);
+  console.log("|");
+  console.log("| How much fuel is in the fuel tank?");
+  console.log(`| Fuel Tank #${carParts.fuelTankToken} has ${await fuelTank.balanceOfERC20(carParts.fuelTankToken, fuelAddress)} fuel`);
+  console.log("|");
+  console.log(line); 
+
+  console.log(`\n${line}`);
+  console.log(`| NOTE: The root owner method used will depend on your hierarchy`);
+  console.log("|");
+  console.log(`| If you have a ERC998 composable NFT, you should use rootOwnerOf`);
+  console.log(`| If you have a ERC721 child, you should use rootOwnerOfChild on the parent contract`);
+  console.log(line);
+}
+
 async function main(): Promise<void> {
   console.log(line);
   console.log("| 🚗 Welcome to the ERC998 Composable NFT Demo");
@@ -446,6 +497,9 @@ async function main(): Promise<void> {
   await waitForInput("Bob needs to fuel the car to drive it...");
   await fuelCar(carParts.carToken, await bob.getAddress());
 
+  await waitForInput("Let's verify Bob's ownership of the car...");
+  await verifyBobOwnership(carParts);
+
   console.log("");
   console.log(line);
   console.log("|");
@@ -474,6 +528,10 @@ type CarParts = {
   fuelTankToken: any, 
   fuelToken: any;
 };
+
+function bytes32ToAddress(bytes32Value: string): string {
+  return ethers.getAddress(ethers.dataSlice(bytes32Value, 12, 32));
+}
 
 async function _assignContract (contract: string, contractInstance: any): Promise<void> {
   switch (contract) {

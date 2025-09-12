@@ -23,6 +23,10 @@ This demo project includes:
 
 ## Usage
 
+### Prerequisites
+
+- Node.js (v18 or higher)
+
 ### Running the Interactive Demo
 
 Run the interactive demo script that demonstrates all ERC998 functionality:
